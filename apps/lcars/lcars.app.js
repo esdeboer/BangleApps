@@ -57,6 +57,132 @@ let lcarsViewPos = 0;
 // let hrmValue = 0;
 let plotMonth = false;
 
+var iconLogo = {
+  width : 31, height : 50, bpp : 3,  transparent : 1,
+  buffer : require("heatshrink").decompress(atob("kmSpICBpAFEAQtABZOQgILJhoLJkdshILHpGbBZNG7dgFg+R2wLJhoLBgQ4HtoLJjdt03YiQLFonbtk26ALGm3bsO24A4FwIsBHYMABYo4B6ACBggLEgYIBAQOwPowIBI4OgPo1twACBwK2EIgNsggCBWAmJRIUGBYKkEHAPYgEmTApBCfYXbgBEFMoMBTApEC2kYEwSMCIgVtw3TBYPABYSJCtoOCTAjCCAQiMCZwYCD2ALBpCGBBYqMCoAUFCIKMCNwILCNAMTQAWREAcAgQpBsALBa4KtCGodApMgEAVATwQLBQALaC4CGDpEYiTaDfYlAwESSoNsgDjEoEASoUAZYgLBgiVBFggCCDoMNFgoCCgMgFgzCChMTFgwLChHQFgwCBwBHBFgwCBwQsHAQQsIBYYIHAQMgiQLJeoQjJARNAA="))
+}
+
+
+global.GB = (_GB => e => {
+  // we eat music events!
+  switch (e.t) {
+    case "pebbleKit":
+      turn = e.message[0];
+      drawNavInfo(turn);
+      break;
+    default:
+      // pass on other events
+      if (_GB) setTimeout(_GB, 0, e);
+  }
+})(global.GB);
+
+
+function drawNavInfo(e) {
+  g.clearRect(20, 93, 75, 170);
+
+  g.setFontAlign(0, 0, 0);
+  g.setFontAntonioMedium();
+
+  // The last line is a battery indicator too
+  var bat = e.percentComplete / 100.0;
+  var batStart = 19;
+  var batWidth = 172 - batStart;
+  var batX2 = parseInt(batWidth * bat + batStart);
+  drawHorizontalBgLine(cOrange, batStart, batX2, 87, 4);
+  drawHorizontalBgLine(cGrey, batX2, 172, 87, 4);
+  for (var i = 0; i + batStart <= 172; i += parseInt(batWidth / 4)) {
+    drawHorizontalBgLine(cBlack, batStart + i, batStart + i + 3, 87, 4)
+  }
+
+
+  switch (e.turnType) {
+
+    case TURN_TYPE.TURN_SLIGHTLY_RIGHT:
+      g.drawImage(iconLogo, 45, 138, {rotate: Math.PI / 6});
+      break;
+    case TURN_TYPE.TURN_RIGHT:
+      g.drawImage(iconLogo, 45, 138, {rotate: Math.PI / 2});
+      break;
+    case TURN_TYPE.TURN_SHARPLY_RIGHT:
+      g.drawImage(iconLogo, 47, 138, {rotate: (Math.PI * 3) / 4});
+      break;
+    case TURN_TYPE.U_TURN:
+      g.drawImage(iconLogo, 47, 138, {rotate: Math.PI});
+      break;
+    case TURN_TYPE.TURN_SHARPLY_LEFT:
+      g.drawImage(iconLogo, 50, 138, {rotate: (Math.PI * 4) / 3});
+      break;
+    case TURN_TYPE.TURN_LEFT:
+      g.drawImage(iconLogo, 53, 138, {rotate: (Math.PI * 3) / 2});
+      break;
+    case TURN_TYPE.TURN_SLIGHTLY_LEFT:
+      g.drawImage(iconLogo, 53, 138, {rotate: (Math.PI * 11) / 6});
+      break;
+    case TURN_TYPE.CONTINUE:
+    default:
+      g.drawImage(iconLogo, 35, 118);
+  }
+
+  g.setColor(cWhite);
+  g.drawString(locale.distance(e.distanceTo).toUpperCase(), 23 + 26, 108);
+
+  var d = new Date(e.eta);
+  printRow("ETA", locale.time(d, 1), 97, cOrange);
+  printRow("DIST", locale.distance(e.distanceLeft).toUpperCase(), 122, cPurple);
+  printRow("NEXT", "", 147, cBlue);
+  //drawData(settings.dataRow3, 147, cBlue);
+
+  g.clearRect(80, 145, 125, 165);
+  g.drawImage(iconLogo, 85, 155, {rotate: (Math.PI / 180) * e.nextTurnAngle, scale: 0.5});
+  g.drawString(locale.distance(e.distanceToNext).toUpperCase(), 130, 147);
+
+  if (e.turnNow || e.turnIn) {
+    switch (e.turnType) {
+      case TURN_TYPE.TURN_SLIGHTLY_RIGHT:
+      case TURN_TYPE.TURN_RIGHT:
+      case TURN_TYPE.TURN_SHARPLY_RIGHT:
+        alarmRight();
+        break;
+      case TURN_TYPE.U_TURN:
+        break;
+      case TURN_TYPE.TURN_SHARPLY_LEFT:
+      case TURN_TYPE.TURN_LEFT:
+      case TURN_TYPE.TURN_SLIGHTLY_LEFT:
+        alarmLeft();
+        break;
+      case TURN_TYPE.CONTINUE:
+      default:
+    }
+  }
+
+
+  //g.drawImage(iconLogo, 110, 155, {rotate: (Math.PI / 180) * e.afterNextTurnAngle ,scale:0.5});
+}
+
+
+function alarmLeft() {
+  // Alarm
+  const t = 300;
+  const n = 100
+  Bangle.buzz(t, 1)
+      .then(() => new Promise(resolve => setTimeout(resolve, n)))
+      .then(() => Bangle.buzz(t, 1))
+      .then(() => new Promise(resolve => setTimeout(resolve, n)))
+      .then(() => Bangle.buzz(t, 1));
+}
+
+function alarmRight() {
+  // Alarm
+  var t = 100;
+  const n = 300;
+  Bangle.buzz(t, 1)
+      .then(() => new Promise(resolve => setTimeout(resolve, n)))
+      .then(() => Bangle.buzz(t, 1))
+      .then(() => new Promise(resolve => setTimeout(resolve, n)))
+      .then(() => Bangle.buzz(t, 1));
+}
+
+
 
 let convert24to16 = function(input)
 {
