@@ -57,18 +57,47 @@ let lcarsViewPos = 0;
 // let hrmValue = 0;
 let plotMonth = false;
 
+
 var iconLogo = {
   width : 31, height : 50, bpp : 3,  transparent : 1,
   buffer : require("heatshrink").decompress(atob("kmSpICBpAFEAQtABZOQgILJhoLJkdshILHpGbBZNG7dgFg+R2wLJhoLBgQ4HtoLJjdt03YiQLFonbtk26ALGm3bsO24A4FwIsBHYMABYo4B6ACBggLEgYIBAQOwPowIBI4OgPo1twACBwK2EIgNsggCBWAmJRIUGBYKkEHAPYgEmTApBCfYXbgBEFMoMBTApEC2kYEwSMCIgVtw3TBYPABYSJCtoOCTAjCCAQiMCZwYCD2ALBpCGBBYqMCoAUFCIKMCNwILCNAMTQAWREAcAgQpBsALBa4KtCGodApMgEAVATwQLBQALaC4CGDpEYiTaDfYlAwESSoNsgDjEoEASoUAZYgLBgiVBFggCCDoMNFgoCCgMgFgzCChMTFgwLChHQFgwCBwBHBFgwCBwQsHAQQsIBYYIHAQMgiQLJeoQjJARNAA="))
-}
+};
+
+var iconAlert = {
+  width : 50, height : 41, bpp : 3,
+  transparent : 1,
+  buffer : require("heatshrink").decompress(atob("AC+AAwsBCJOSA40EyARIpAIGiVJBBEgBI1JkhBFgQIHJQMkyVADQ2ShICBAoQCDF4gOJAQZfECJg4FJQQRJPQpTCCJyVTOIKVIBA5fKf6oATQAIDBhAHCgmSO4OAWYICCcwYLBgCeBiAUBgB3BBYQaCyQLBiUBNYcQgMggQsCpACCSoQgBCgYvBIIKYBkACDEwQaCCgIjBSoIXCAQRsLJQwALJQwALJQoSMI5wAvJpAIIdISSHyCbIMoICGR4wRKAQKtGCJWSoASDCJlJVow4QKZDdCPQzjJbpCVRL4QHGPQLOIJRDvX"))
+};
+
+const TURN_TYPE = {
+  CONTINUE: 1,
+  TURN_LEFT: 2,
+  TURN_SLIGHTLY_LEFT: 3,
+  TURN_SHARPLY_LEFT: 4,
+  TURN_RIGHT: 5,
+  TURN_SLIGHTLY_RIGHT: 6,
+  TURN_SHARPLY_RIGHT: 7,
+  KEEP_LEFT: 8,
+  KEEP_RIGHT: 9,
+  U_TURN: 10,
+  RIGHT_U_TURN: 11,
+  OFF_ROUTE: 12,
+  ROUNDABOUT: 13,
+  ROUNDABOUT_LEFT: 14
+};
 
 
 global.GB = (_GB => e => {
   // we eat music events!
   switch (e.t) {
     case "pebbleKit":
-      turn = e.message[0];
-      drawNavInfo(turn);
+      var body = e.message[0];
+      if(body.turnIn || body.turnNow){
+        turnAlert(body);
+      } else {
+        turn = body;
+        drawNavInfo(turn);
+      }
       break;
     default:
       // pass on other events
@@ -78,10 +107,7 @@ global.GB = (_GB => e => {
 
 
 function drawNavInfo(e) {
-  g.clearRect(20, 93, 75, 170);
-
-  g.setFontAlign(0, 0, 0);
-  g.setFontAntonioMedium();
+  drawTurn(e);
 
   // The last line is a battery indicator too
   var bat = e.percentComplete / 100.0;
@@ -91,9 +117,29 @@ function drawNavInfo(e) {
   drawHorizontalBgLine(cOrange, batStart, batX2, 87, 4);
   drawHorizontalBgLine(cGrey, batX2, 172, 87, 4);
   for (var i = 0; i + batStart <= 172; i += parseInt(batWidth / 4)) {
-    drawHorizontalBgLine(cBlack, batStart + i, batStart + i + 3, 87, 4)
+    drawHorizontalBgLine(cBlack, batStart + i, batStart + i + 3, 87, 4);
   }
 
+  var d = new Date(e.eta*1000);
+  printRow("ETA", locale.time(d, 1), 97, cOrange);
+  printRow("DIST", locale.distance(e.distanceLeft).toUpperCase(), 122, cPurple);
+  printRow("NEXT", "", 147, cBlue);
+  //drawData(settings.dataRow3, 147, cBlue);
+
+  g.clearRect(80, 145, 125, 165);
+  g.drawImage(iconLogo, 85, 155, {rotate: (Math.PI / 180) * e.nextTurnAngle, scale: 0.5});
+  g.drawString(locale.distance(e.distanceToNext).toUpperCase(), 130, 147);
+
+  g.setFontAlign(-1, -1, 0);
+
+  //g.drawImage(iconLogo, 110, 155, {rotate: (Math.PI / 180) * e.afterNextTurnAngle ,scale:0.5});
+}
+
+function drawTurn(e) {
+  g.clearRect(20, 93, 75, 170);
+
+  g.setFontAlign(0, 0, 0);
+  g.setFontAntonioMedium();
 
   switch (e.turnType) {
 
@@ -107,6 +153,7 @@ function drawNavInfo(e) {
       g.drawImage(iconLogo, 47, 138, {rotate: (Math.PI * 3) / 4});
       break;
     case TURN_TYPE.U_TURN:
+    case TURN_TYPE.RIGHT_U_TURN:
       g.drawImage(iconLogo, 47, 138, {rotate: Math.PI});
       break;
     case TURN_TYPE.TURN_SHARPLY_LEFT:
@@ -118,6 +165,9 @@ function drawNavInfo(e) {
     case TURN_TYPE.TURN_SLIGHTLY_LEFT:
       g.drawImage(iconLogo, 53, 138, {rotate: (Math.PI * 11) / 6});
       break;
+    case TURN_TYPE.OFF_ROUTE:
+      g.drawImage(iconAlert,25,120);
+      break;
     case TURN_TYPE.CONTINUE:
     default:
       g.drawImage(iconLogo, 35, 118);
@@ -125,17 +175,11 @@ function drawNavInfo(e) {
 
   g.setColor(cWhite);
   g.drawString(locale.distance(e.distanceTo).toUpperCase(), 23 + 26, 108);
+  g.setFontAlign(-1, -1, 0);
 
-  var d = new Date(e.eta);
-  printRow("ETA", locale.time(d, 1), 97, cOrange);
-  printRow("DIST", locale.distance(e.distanceLeft).toUpperCase(), 122, cPurple);
-  printRow("NEXT", "", 147, cBlue);
-  //drawData(settings.dataRow3, 147, cBlue);
+}
 
-  g.clearRect(80, 145, 125, 165);
-  g.drawImage(iconLogo, 85, 155, {rotate: (Math.PI / 180) * e.nextTurnAngle, scale: 0.5});
-  g.drawString(locale.distance(e.distanceToNext).toUpperCase(), 130, 147);
-
+function turnAlert(e) {
   if (e.turnNow || e.turnIn) {
     switch (e.turnType) {
       case TURN_TYPE.TURN_SLIGHTLY_RIGHT:
@@ -154,17 +198,15 @@ function drawNavInfo(e) {
       default:
     }
   }
-
-
-  //g.drawImage(iconLogo, 110, 155, {rotate: (Math.PI / 180) * e.afterNextTurnAngle ,scale:0.5});
 }
-
 
 function alarmLeft() {
   // Alarm
   const t = 300;
-  const n = 100
+  const n = 100;
   Bangle.buzz(t, 1)
+      .then(() => new Promise(resolve => setTimeout(resolve, n)))
+      .then(() => Bangle.buzz(t, 1))
       .then(() => new Promise(resolve => setTimeout(resolve, n)))
       .then(() => Bangle.buzz(t, 1))
       .then(() => new Promise(resolve => setTimeout(resolve, n)))
@@ -173,11 +215,9 @@ function alarmLeft() {
 
 function alarmRight() {
   // Alarm
-  var t = 100;
+  var t = 600;
   const n = 300;
   Bangle.buzz(t, 1)
-      .then(() => new Promise(resolve => setTimeout(resolve, n)))
-      .then(() => Bangle.buzz(t, 1))
       .then(() => new Promise(resolve => setTimeout(resolve, n)))
       .then(() => Bangle.buzz(t, 1));
 }
