@@ -114,17 +114,17 @@ function drawNavInfo(e) {
   var batStart = 19;
   var batWidth = 172 - batStart;
   var batX2 = parseInt(batWidth * bat + batStart);
-  drawHorizontalBgLine(cOrange, batStart, batX2, 87, 4);
+  drawHorizontalBgLine(color2, batStart, batX2, 87, 4);
   drawHorizontalBgLine(cGrey, batX2, 172, 87, 4);
   for (var i = 0; i + batStart <= 172; i += parseInt(batWidth / 4)) {
     drawHorizontalBgLine(cBlack, batStart + i, batStart + i + 3, 87, 4);
   }
 
   var d = new Date(e.eta*1000);
-  printRow("ETA", locale.time(d, 1), 97, cOrange);
-  printRow("DIST", locale.distance(e.distanceLeft).toUpperCase(), 122, cPurple);
-  printRow("NEXT", "", 147, cBlue);
-  //drawData(settings.dataRow3, 147, cBlue);
+  printRow("ETA", locale.time(d, 1), 97, color2);
+  printRow("DIST", locale.distance(e.distanceLeft).toUpperCase(), 122, color3);
+  printRow("NEXT", "", 147, color1);
+  //drawData(settings.dataRow3, 147, color1);
 
   g.clearRect(80, 145, 125, 165);
   g.drawImage(iconLogo, 85, 155, {rotate: (Math.PI / 180) * e.nextTurnAngle, scale: 0.5});
@@ -667,6 +667,7 @@ let drawPosition0 = function(){
 
   // Draw state
   drawState();
+  if(turn) drawNavInfo(turn);
 };
 
 let drawPosition1 = function(){
