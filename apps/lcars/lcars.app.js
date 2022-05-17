@@ -94,9 +94,12 @@ global.GB = (_GB => e => {
       var body = e.message[0];
       if(body.turnIn || body.turnNow){
         turnAlert(body);
-      } else {
+      } else if (e.turnType) {
         turn = body;
         drawNavInfo(turn);
+      } else {
+        turn = null;
+        drawPosition0();
       }
       break;
     default:
