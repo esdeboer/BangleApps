@@ -88,14 +88,12 @@ const TURN_TYPE = {
 
 
 global.GB = (_GB => e => {
-  // we eat music events!
   switch (e.t) {
-    case "pebbleKit":
-      var body = e.message[0];
-      if(body.turnIn || body.turnNow){
-        turnAlert(body);
-      } else if (body.turnType) {
-        turn = body;
+    case "bangleOSM":
+      if(e.turnIn || e.turnNow){
+        turnAlert(e);
+      } else if (e.turnType) {
+        turn = e;
         drawNavInfo(turn);
       } else {
         turn = null;
