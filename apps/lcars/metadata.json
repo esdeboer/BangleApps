@@ -10,7 +10,7 @@
   "type": "clock",
   "tags": "clock",
   "screenshots": [
-    {"url":"screenshot_1.png"},
+    {"url":"screenshot_4.png"},
     {"url":"screenshot_3.png"}],
   "storage": [
     {"name":"lcars.app.js","url":"lcars.app.js"},
