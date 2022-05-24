@@ -3,7 +3,7 @@ Bangle.drawWidgets();
 
 // Const
 let TODOLIST_FILE = "todolist.json";
-let MAX_DESCRIPTION_LEN = 14;
+let MAX_DESCRIPTION_LEN = 50;
 
 // Clear todolist file
 // require("Storage").erase(TODOLIST_FILE);
