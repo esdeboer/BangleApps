@@ -90,7 +90,7 @@ function showSubMenu(key) {
 
 function createListItem(todolist, indexes, index) {
   let reminder = getItem(todolist, indexes, index);
-  if (reminder.children.length > 0) {
+  if (reminder.children && reminder.children.length > 0) {
     let childIndexes = [];
     for (let i = 0; i < indexes.length; i++) {
       childIndexes.push(indexes[i]);
