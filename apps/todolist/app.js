@@ -75,7 +75,7 @@ function toggleableStatus(todolist, indexes, index) {
   const reminder = getItem(todolist, indexes, index);
   return {
     value: !!reminder.done, // !! converts undefined to false
-    format: (val) => (val ? "[X]" : "[-]"),
+    format: (val) => (val ? "X" : "-"),
     onchange: (val) => {
       reminder.done = val;
       writeData();
