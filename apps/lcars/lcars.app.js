@@ -56,6 +56,7 @@ let cGrey = "#424242";
 let lcarsViewPos = 0;
 // let hrmValue = 0;
 let plotMonth = false;
+var turn = null;
 
 
 var iconLogo = {
@@ -86,6 +87,9 @@ const TURN_TYPE = {
   ROUNDABOUT_LEFT: 14
 };
 
+function distance(m) {
+  return (m<1000)?Math.round(m)+"m":(m/1000).toFixed(1) +"km";
+}
 
 global.GB = (_GB => e => {
   switch (e.t) {
@@ -123,13 +127,13 @@ function drawNavInfo(e) {
 
   var d = new Date(e.eta*1000);
   printRow("ETA", locale.time(d, 1), 97, color2);
-  printRow("DIST", locale.distance(e.distanceLeft).toUpperCase(), 122, color3);
+  printRow("DIST", distance(e.distanceLeft).toUpperCase(), 122, color3);
   printRow("NEXT", "", 147, color1);
   //drawData(settings.dataRow3, 147, color1);
 
   g.clearRect(80, 145, 125, 165);
   g.drawImage(iconLogo, 85, 155, {rotate: (Math.PI / 180) * e.nextTurnAngle, scale: 0.5});
-  g.drawString(locale.distance(e.distanceToNext).toUpperCase(), 130, 147);
+  g.drawString(distance(e.distanceToNext).toUpperCase(), 130, 147);
 
   g.setFontAlign(-1, -1, 0);
 
@@ -175,7 +179,7 @@ function drawTurn(e) {
   }
 
   g.setColor(cWhite);
-  g.drawString(locale.distance(e.distanceTo).toUpperCase(), 23 + 26, 108);
+  g.drawString(distance(e.distanceTo).toUpperCase(), 23 + 26, 108);
   g.setFontAlign(-1, -1, 0);
 
 }
