@@ -128,8 +128,8 @@ function showCode(card) {
       g.setFont("Vector:20");
       g.setFontAlign(0,1).setColor(BLACK);
       g.drawString(card.value, g.getWidth()/2, g.getHeight());
-      const codabar = require("cards.codabar.js");
-      let code = new codabar(card.value, {});
+      const EAN13 = require("cards.EAN13.js");
+      let code = new EAN13(card.value, {});
       printLinearCode(code.encode().data);
       break;
     }
